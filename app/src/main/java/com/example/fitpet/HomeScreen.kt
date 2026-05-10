@@ -16,6 +16,10 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -25,12 +29,41 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
-    // Datos hardcodeados según requerimiento
-    val petName = "Fitty"
-    val petStatus = "Despierta"
-    val stepsToday = 3200
+    // 1. Estado local persistente a rotaciones
+    var stepsToday by rememberSaveable { mutableIntStateOf(3200) }
     val stepGoal = 10000
-    val progress = stepsToday.toFloat() / stepGoal
+
+    // 2. Lógica derivada según los rangos solicitados
+    val (petStatus, petImageRes, motivationalMessage) = when {
+        stepsToday < 2500 -> Triple(
+            "Dormida", 
+            R.drawable.pet_sleepy, 
+            "Shhh... Fitty está descansando."
+        )
+        stepsToday < 5000 -> Triple(
+            "Despierta", 
+            R.drawable.pet_awake, 
+            "¡Fitty ha despertado! ¿Damos un paseo?"
+        )
+        stepsToday < 7500 -> Triple(
+            "Activa", 
+            R.drawable.pet_active, 
+            "¡A Fitty le encanta moverse! ¡Sigue así!"
+        )
+        stepsToday < 10000 -> Triple(
+            "Feliz", 
+            R.drawable.pet_happy, 
+            "¡Fitty está muy feliz por el ejercicio!"
+        )
+        else -> Triple(
+            "Meta cumplida", 
+            R.drawable.pet_goal, 
+            "¡Increíble! Han alcanzado la meta de hoy."
+        )
+    }
+
+    // El progreso visual debe estar entre 0f y 1f
+    val progress = (stepsToday.toFloat() / stepGoal).coerceAtMost(1f)
 
     Column(
         modifier = modifier
@@ -61,18 +94,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Imagen de la mascota
+                // Imagen de la mascota dinámica
                 Image(
-                    painter = painterResource(id = R.drawable.pet_awake),
-                    contentDescription = "Mi Mascota",
+                    painter = painterResource(id = petImageRes),
+                    contentDescription = "Estado de la mascota",
                     modifier = Modifier.size(180.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Nombre y Estado
+                // Nombre y Estado dinámico
                 Text(
-                    text = petName,
+                    text = "Fitty",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -105,9 +138,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        // Mensaje Motivacional
+        // Mensaje Motivacional dinámico
         Text(
-            text = "¡Fitty se siente con energía! Sigue caminando para mantenerla feliz.",
+            text = motivationalMessage,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -116,9 +149,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Botón Principal
+        // Botón Principal con interacción
         Button(
-            onClick = { /* Lógica hardcodeada por ahora */ },
+            onClick = { stepsToday += 100 },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
