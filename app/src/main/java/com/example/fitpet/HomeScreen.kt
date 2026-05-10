@@ -3,6 +3,7 @@ package com.example.fitpet
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,11 +16,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -28,12 +26,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
-    // 1. Estado local persistente a rotaciones
-    var stepsToday by rememberSaveable { mutableIntStateOf(3200) }
+fun HomeScreen(
+    stepsToday: Int,
+    onStepsChanged: (Int) -> Unit,
+    onNavigateToStats: () -> Unit,
+    onNavigateToInfo: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val stepGoal = 10000
 
-    // 2. Lógica derivada según los rangos solicitados
+    // Lógica reactiva para determinar el estado de la mascota según los pasos
     val (petStatus, petImageRes, motivationalMessage) = when {
         stepsToday < 2500 -> Triple(
             "Dormida", 
@@ -62,7 +64,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         )
     }
 
-    // El progreso visual debe estar entre 0f y 1f
     val progress = (stepsToday.toFloat() / stepGoal).coerceAtMost(1f)
 
     Column(
@@ -70,15 +71,25 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Título de la App
-        Text(
-            text = "FitPet",
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
+        // Título y accesos rápidos de navegación
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "FitPet",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Row {
+                TextButton(onClick = onNavigateToStats) { Text("Stats") }
+                TextButton(onClick = onNavigateToInfo) { Text("Info") }
+            }
+        }
 
         // Tarjeta Central Principal
         Card(
@@ -94,16 +105,14 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Imagen de la mascota dinámica
                 Image(
                     painter = painterResource(id = petImageRes),
-                    contentDescription = "Estado de la mascota",
+                    contentDescription = "Estado de Fitty",
                     modifier = Modifier.size(180.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Nombre y Estado dinámico
                 Text(
                     text = "Fitty",
                     style = MaterialTheme.typography.headlineMedium,
@@ -117,7 +126,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Sección de Progreso
                 Text(
                     text = "Pasos de hoy: $stepsToday / $stepGoal",
                     style = MaterialTheme.typography.bodyMedium,
@@ -138,7 +146,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        // Mensaje Motivacional dinámico
         Text(
             text = motivationalMessage,
             style = MaterialTheme.typography.bodyMedium,
@@ -149,9 +156,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Botón Principal con interacción
         Button(
-            onClick = { stepsToday += 100 },
+            onClick = { onStepsChanged(stepsToday + 100) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
