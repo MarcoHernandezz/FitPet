@@ -4,16 +4,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
-class FitPetViewModel : ViewModel() {
-    // Estado básico
-    var stepsToday by mutableIntStateOf(3200)
+class FitPetViewModel(private val dataStore: FitPetDataStore) : ViewModel() {
+    
+    var stepsToday by mutableIntStateOf(0)
         private set
     
     val stepGoal = 10000
     val petName = "Fitty"
 
-    // Lógica derivada expuesta como propiedades
+    init {
+        viewModelScope.launch {
+            stepsToday = dataStore.stepsFlow.first()
+        }
+    }
+
     val progress: Float
         get() = (stepsToday.toFloat() / stepGoal).coerceAtMost(1f)
 
@@ -46,5 +54,8 @@ class FitPetViewModel : ViewModel() {
 
     fun addSteps() {
         stepsToday += 100
+        viewModelScope.launch {
+            dataStore.saveSteps(stepsToday)
+        }
     }
 }

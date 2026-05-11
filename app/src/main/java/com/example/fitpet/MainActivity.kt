@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,17 +20,30 @@ import com.example.fitpet.ui.theme.FitPetTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Inicializamos el DataStore para persistencia
+        val dataStore = FitPetDataStore(applicationContext)
+        
         enableEdgeToEdge()
         setContent {
             FitPetTheme {
-                FitPetApp()
+                // Proveemos el ViewModel con su dependencia inyectada manualmente
+                val viewModel: FitPetViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return FitPetViewModel(dataStore) as T
+                        }
+                    }
+                )
+                FitPetApp(viewModel)
             }
         }
     }
 }
 
 @Composable
-fun FitPetApp(viewModel: FitPetViewModel = viewModel()) {
+fun FitPetApp(viewModel: FitPetViewModel) {
     val navController = rememberNavController()
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
