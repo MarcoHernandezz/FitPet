@@ -2,13 +2,22 @@ package com.example.fitpet
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,14 +40,37 @@ fun SettingsScreen(
 ) {
     var nameInput by remember { mutableStateOf(viewModel.petName) }
     var goalInput by remember { mutableStateOf(viewModel.stepGoal.toString()) }
+    var showResetDialog by remember { mutableStateOf(false) }
 
-    // Validación local: el nombre no puede estar vacío y la meta debe ser > 0
     val isInputValid = nameInput.isNotBlank() && (goalInput.toIntOrNull() ?: 0) > 0
+    val scrollState = rememberScrollState()
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text("Reiniciar progreso") },
+            text = { Text("¿Estás seguro de que quieres volver los pasos a cero? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.resetProgress()
+                    showResetDialog = false
+                }) {
+                    Text("Reiniciar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(24.dp)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -68,8 +100,6 @@ fun SettingsScreen(
             isError = (goalInput.toIntOrNull() ?: 0) <= 0
         )
 
-        Spacer(modifier = Modifier.weight(1f))
-
         Button(
             onClick = {
                 val goal = goalInput.toIntOrNull() ?: 10000
@@ -82,11 +112,49 @@ fun SettingsScreen(
             Text("Guardar Cambios")
         }
 
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        // Sección Modo Demo
+        Text(
+            text = "Modo Demo / Herramientas",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.Start)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilledTonalButton(
+                onClick = { viewModel.add1000Steps() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("+1000")
+            }
+            FilledTonalButton(
+                onClick = { viewModel.completeGoal() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Meta")
+            }
+        }
+
+        OutlinedButton(
+            onClick = { showResetDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("Reiniciar pasos a 0")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         TextButton(
             onClick = onBack,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Cancelar")
+            Text("Volver")
         }
     }
 }
