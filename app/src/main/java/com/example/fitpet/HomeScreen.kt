@@ -35,6 +35,7 @@ fun HomeScreen(
     viewModel: FitPetViewModel,
     onNavigateToStats: () -> Unit,
     onNavigateToInfo: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
@@ -49,7 +50,7 @@ fun HomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Cabecera con navegación
-        HeaderSection(onNavigateToStats, onNavigateToInfo)
+        HeaderSection(onNavigateToStats, onNavigateToInfo, onNavigateToSettings)
         
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -89,7 +90,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HeaderSection(onStats: () -> Unit, onInfo: () -> Unit) {
+fun HeaderSection(onStats: () -> Unit, onInfo: () -> Unit, onSettings: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -104,6 +105,7 @@ fun HeaderSection(onStats: () -> Unit, onInfo: () -> Unit) {
         Row {
             TextButton(onClick = onStats) { Text("Stats") }
             TextButton(onClick = onInfo) { Text("Info") }
+            TextButton(onClick = onSettings) { Text("Ajustes") }
         }
     }
 }

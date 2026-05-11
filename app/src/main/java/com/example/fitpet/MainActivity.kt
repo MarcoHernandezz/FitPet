@@ -68,6 +68,13 @@ fun FitPetApp(viewModel: FitPetViewModel) {
                                 launchSingleTop = true
                             }
                         }
+                    },
+                    onNavigateToSettings = {
+                        if (NavigationUtils.canNavigate()) {
+                            navController.navigate("settings") {
+                                launchSingleTop = true
+                            }
+                        }
                     }
                 )
             }
@@ -83,6 +90,16 @@ fun FitPetApp(viewModel: FitPetViewModel) {
             }
             composable("info") {
                 InfoScreen(
+                    onBack = {
+                        if (NavigationUtils.canNavigate()) {
+                            navController.popBackStack()
+                        }
+                    }
+                )
+            }
+            composable("settings") {
+                SettingsScreen(
+                    viewModel = viewModel,
                     onBack = {
                         if (NavigationUtils.canNavigate()) {
                             navController.popBackStack()
