@@ -49,9 +49,20 @@ fun FitPetApp(viewModel: FitPetViewModel) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "home",
+            startDestination = "splash",
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable("splash") {
+                SplashScreen(
+                    viewModel = viewModel,
+                    onNavigateToHome = {
+                        navController.navigate("home") {
+                            // Limpiamos el historial para que al volver no regrese al Splash
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable("home") {
                 HomeScreen(
                     viewModel = viewModel,
