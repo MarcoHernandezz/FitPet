@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -64,6 +65,17 @@ fun SplashScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Icono de la App
+            Image(
+                painter = painterResource(id = R.drawable.fitpet_icon),
+                contentDescription = "Logo FitPet",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(MaterialTheme.shapes.medium)
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
             Text(
                 text = "FitPet",
                 style = MaterialTheme.typography.displayLarge,
