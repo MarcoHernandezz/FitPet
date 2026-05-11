@@ -7,7 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class FitPetViewModel(private val dataStore: FitPetDataStore) : ViewModel() {
 
@@ -25,6 +27,17 @@ class FitPetViewModel(private val dataStore: FitPetDataStore) : ViewModel() {
 
     init {
         viewModelScope.launch {
+            // 1. Obtener fecha actual en formato yyyy-MM-dd
+            val today = LocalDate.now().toString()
+
+            // 2. Comprobar si necesitamos resetear (leyendo el primer valor actual de DataStore)
+            val initialData = dataStore.userDataFlow.first()
+            if (initialData.lastDate != today) {
+                // Es un día nuevo o primera ejecución: reiniciamos progreso y actualizamos fecha
+                dataStore.resetDailySteps(today)
+            }
+
+            // 3. Suscribirse a los cambios de forma normal para actualizar la UI
             dataStore.userDataFlow.collectLatest { data ->
                 stepsToday = data.stepsToday
                 petName = data.petName.ifBlank { "Fitty" }
