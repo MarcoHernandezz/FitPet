@@ -7,7 +7,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -16,18 +20,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fitpet.ui.theme.FitPetTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Inicializamos el DataStore para persistencia
         val dataStore = FitPetDataStore(applicationContext)
         
         enableEdgeToEdge()
         setContent {
             FitPetTheme {
-                // Proveemos el ViewModel con su dependencia inyectada manualmente
                 val viewModel: FitPetViewModel = viewModel(
                     factory = object : ViewModelProvider.Factory {
                         @Suppress("UNCHECKED_CAST")
@@ -45,8 +48,20 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun FitPetApp(viewModel: FitPetViewModel) {
     val navController = rememberNavController()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    val showMessage: (String) -> Unit = { message ->
+        scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = "splash",
@@ -57,7 +72,6 @@ fun FitPetApp(viewModel: FitPetViewModel) {
                     viewModel = viewModel,
                     onNavigateToHome = {
                         navController.navigate("home") {
-                            // Limpiamos el historial para que al volver no regrese al Splash
                             popUpTo("splash") { inclusive = true }
                         }
                     }
@@ -66,6 +80,7 @@ fun FitPetApp(viewModel: FitPetViewModel) {
             composable("home") {
                 HomeScreen(
                     viewModel = viewModel,
+                    onShowMessage = showMessage,
                     onNavigateToStats = {
                         if (NavigationUtils.canNavigate()) {
                             navController.navigate("stats") {
@@ -111,6 +126,7 @@ fun FitPetApp(viewModel: FitPetViewModel) {
             composable("settings") {
                 SettingsScreen(
                     viewModel = viewModel,
+                    onShowMessage = showMessage,
                     onBack = {
                         if (NavigationUtils.canNavigate()) {
                             navController.popBackStack()

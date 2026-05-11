@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeScreen(
     viewModel: FitPetViewModel,
+    onShowMessage: (String) -> Unit,
     onNavigateToStats: () -> Unit,
     onNavigateToInfo: () -> Unit,
     onNavigateToSettings: () -> Unit,
@@ -70,7 +71,10 @@ fun HomeScreen(
                 ) {
                     PetInfo(viewModel)
                     ProgressSection(viewModel)
-                    CaminarButton(onClick = { viewModel.addSteps() })
+                    CaminarButton(onClick = { 
+                        viewModel.addSteps() 
+                        onShowMessage("¡Se sumaron 100 pasos!")
+                    })
                 }
             }
         } else {
@@ -84,7 +88,10 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(32.dp))
-            CaminarButton(onClick = { viewModel.addSteps() })
+            CaminarButton(onClick = { 
+                viewModel.addSteps() 
+                onShowMessage("¡Se sumaron 100 pasos!")
+            })
         }
     }
 }

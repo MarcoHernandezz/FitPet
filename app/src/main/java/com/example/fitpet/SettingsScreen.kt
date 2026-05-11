@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SettingsScreen(
     viewModel: FitPetViewModel,
+    onShowMessage: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -53,6 +54,7 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.resetProgress()
+                    onShowMessage("Progreso reiniciado")
                     showResetDialog = false
                 }) {
                     Text("Reiniciar", color = MaterialTheme.colorScheme.error)
@@ -104,6 +106,7 @@ fun SettingsScreen(
             onClick = {
                 val goal = goalInput.toIntOrNull() ?: 10000
                 viewModel.updateSettings(nameInput, goal)
+                onShowMessage("Cambios guardados correctamente")
                 onBack()
             },
             modifier = Modifier.fillMaxWidth(),
@@ -127,13 +130,19 @@ fun SettingsScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             FilledTonalButton(
-                onClick = { viewModel.add1000Steps() },
+                onClick = { 
+                    viewModel.add1000Steps() 
+                    onShowMessage("Se agregaron 1000 pasos")
+                },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("+1000")
             }
             FilledTonalButton(
-                onClick = { viewModel.completeGoal() },
+                onClick = { 
+                    viewModel.completeGoal() 
+                    onShowMessage("Meta completada")
+                },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Meta")
