@@ -1,7 +1,9 @@
 package com.example.fitpet
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -20,6 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,145 +32,139 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeScreen(
-    stepsToday: Int,
-    onStepsChanged: (Int) -> Unit,
+    viewModel: FitPetViewModel,
     onNavigateToStats: () -> Unit,
     onNavigateToInfo: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val stepGoal = 10000
-
-    // Lógica reactiva para determinar el estado de la mascota según los pasos
-    val (petStatus, petImageRes, motivationalMessage) = when {
-        stepsToday < 2500 -> Triple(
-            "Dormida", 
-            R.drawable.pet_sleepy, 
-            "Shhh... Fitty está descansando."
-        )
-        stepsToday < 5000 -> Triple(
-            "Despierta", 
-            R.drawable.pet_awake, 
-            "¡Fitty ha despertado! ¿Damos un paseo?"
-        )
-        stepsToday < 7500 -> Triple(
-            "Activa", 
-            R.drawable.pet_active, 
-            "¡A Fitty le encanta moverse! ¡Sigue así!"
-        )
-        stepsToday < 10000 -> Triple(
-            "Feliz", 
-            R.drawable.pet_happy, 
-            "¡Fitty está muy feliz por el ejercicio!"
-        )
-        else -> Triple(
-            "Meta cumplida", 
-            R.drawable.pet_goal, 
-            "¡Increíble! Han alcanzado la meta de hoy."
-        )
-    }
-
-    val progress = (stepsToday.toFloat() / stepGoal).coerceAtMost(1f)
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(16.dp)
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título y accesos rápidos de navegación
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "FitPet",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Row {
-                TextButton(onClick = onNavigateToStats) { Text("Stats") }
-                TextButton(onClick = onNavigateToInfo) { Text("Info") }
-            }
-        }
+        // Cabecera con navegación
+        HeaderSection(onNavigateToStats, onNavigateToInfo)
+        
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Tarjeta Central Principal
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+        if (isLandscape) {
+            // Layout Horizontal: Dos columnas
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id = petImageRes),
-                    contentDescription = "Estado de Fitty",
-                    modifier = Modifier.size(180.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Fitty",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = petStatus,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Pasos de hoy: $stepsToday / $stepGoal",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Start
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(12.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.outlineVariant,
-                )
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    PetImage(viewModel.petImageRes)
+                }
+                Column(
+                    modifier = Modifier.weight(1.2f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    PetInfo(viewModel)
+                    ProgressSection(viewModel)
+                    CaminarButton(onClick = { viewModel.addSteps() })
+                }
             }
-        }
-
-        Text(
-            text = motivationalMessage,
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 16.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(
-            onClick = { onStepsChanged(stepsToday + 100) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-        ) {
+        } else {
+            // Layout Vertical
+            PetCard(viewModel)
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Caminar (+100 pasos)",
-                style = MaterialTheme.typography.titleMedium
+                text = viewModel.motivationalMessage,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Spacer(modifier = Modifier.height(32.dp))
+            CaminarButton(onClick = { viewModel.addSteps() })
         }
+    }
+}
+
+@Composable
+fun HeaderSection(onStats: () -> Unit, onInfo: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "FitPet",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Row {
+            TextButton(onClick = onStats) { Text("Stats") }
+            TextButton(onClick = onInfo) { Text("Info") }
+        }
+    }
+}
+
+@Composable
+fun PetImage(resId: Int) {
+    Image(
+        painter = painterResource(id = resId),
+        contentDescription = null,
+        modifier = Modifier.size(180.dp)
+    )
+}
+
+@Composable
+fun PetInfo(viewModel: FitPetViewModel) {
+    Column {
+        Text(text = viewModel.petName, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(text = viewModel.petStatus, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+    }
+}
+
+@Composable
+fun ProgressSection(viewModel: FitPetViewModel) {
+    Column {
+        Text(text = "Pasos: ${viewModel.stepsToday} / ${viewModel.stepGoal}", style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        LinearProgressIndicator(
+            progress = { viewModel.progress },
+            modifier = Modifier.fillMaxWidth().height(12.dp),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.outlineVariant
+        )
+    }
+}
+
+@Composable
+fun PetCard(viewModel: FitPetViewModel) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            PetImage(viewModel.petImageRes)
+            Spacer(modifier = Modifier.height(16.dp))
+            PetInfo(viewModel)
+            Spacer(modifier = Modifier.height(24.dp))
+            ProgressSection(viewModel)
+        }
+    }
+}
+
+@Composable
+fun CaminarButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(56.dp)
+    ) {
+        Text("Caminar (+100 pasos)")
     }
 }

@@ -24,11 +24,13 @@ fun InfoScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(24.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -45,27 +47,19 @@ fun InfoScreen(
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider()
 
-        Text(
-            text = "Significado de los estados:",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            InfoItem("Dormida", "0 a 2499 pasos.")
+            InfoItem("Despierta", "2500 a 4999 pasos.")
+            InfoItem("Activa", "5000 a 7499 pasos.")
+            InfoItem("Feliz", "7500 a 9999 pasos.")
+            InfoItem("Meta cumplida", "10000+ pasos.")
+        }
 
-        InfoItem(title = "Dormida", description = "0 a 2499 pasos. Fitty está recuperando fuerzas.")
-        InfoItem(title = "Despierta", description = "2500 a 4999 pasos. ¡Lista para empezar el día!")
-        InfoItem(title = "Activa", description = "5000 a 7499 pasos. ¡Fitty tiene mucha energía!")
-        InfoItem(title = "Feliz", description = "7500 a 9999 pasos. El ejercicio le sienta genial.")
-        InfoItem(title = "Meta cumplida", description = "10000+ pasos. ¡Objetivo logrado!")
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(
-            onClick = onBack,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
             Text("Volver")
         }
     }
@@ -73,12 +67,8 @@ fun InfoScreen(
 
 @Composable
 fun InfoItem(title: String, description: String) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
+    Column {
         Text(text = title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
         Text(text = description, style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.height(4.dp))
     }
 }
